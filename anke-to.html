@@ -223,8 +223,20 @@
   <!-- ===== データ ===== -->
   <section class="panel" id="data">
     <div class="card">
-      <h2>データの保存・受け渡し</h2>
-      <p class="muted">回答はこの端末（ブラウザ）に保存されます。店舗ごとに入力し、CSVで書き出して本社で読み込めば全店の集計ができます。</p>
+      <h2>Googleドライブ送信（推奨）</h2>
+      <p class="muted">送信先URLを設定すると、保存するたびに回答がGoogleスプレッドシート（ドライブ内）に自動で飛びます。全店の回答が1つのシートに集約され、本社はそのシートを開くだけで確認できます。</p>
+      <label class="lb">送信先URL（Google Apps Script ウェブアプリ）</label>
+      <input type="text" id="gasUrlIn" placeholder="https://script.google.com/macros/s/..../exec">
+      <div class="actions" style="margin-top:10px">
+        <button class="btn navy" onclick="saveGasUrl()">送信先を保存</button>
+        <button class="btn ghost" onclick="clearGasUrl()">送信先を解除</button>
+        <span id="gasState" class="muted"></span>
+      </div>
+      <p class="muted" style="margin-top:10px">※設定方法は同梱の「Googleドライブ連携_設定手順」を参照。未設定でも端末保存＋CSVで運用できます。</p>
+    </div>
+    <div class="card">
+      <h2>データの保存・受け渡し（CSV）</h2>
+      <p class="muted">回答はこの端末（ブラウザ）にも保存されます。ドライブ連携しない場合は、CSVで書き出して本社で読み込めば全店集計できます。</p>
       <div class="actions">
         <button class="btn navy" onclick="exportCSV()">CSVで書き出す</button>
         <label class="btn ghost" style="margin:0">CSVを読み込む（追加）
@@ -258,6 +270,15 @@ const GOOD=["景色・自然","食事（昼食）","買い物・お土産","他�
 const NEXT=["温泉地","海・水族館","花・庭園","神社仏閣","紅葉・桜など季節の名所","ショッピング"];
 const AGAIN=["はい","どちらでも","いいえ"];
 const KEY="shirakawa_enquete_v1";
+const URLKEY="shirakawa_gas_url";
+// ↓↓ Googleドライブへ飛ばす場合、デプロイ後のウェブアプリURLをここに貼る（全店に配る版はここに書くと楽）
+const DEFAULT_GAS_URL="";
+function gasUrl(){return (localStorage.getItem(URLKEY)||DEFAULT_GAS_URL||"").trim()}
+function postToGas(rec){
+  const u=gasUrl();if(!u)return Promise.resolve(false);
+  return fetch(u,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(rec)})
+    .then(()=>true).catch(()=>false);
+}
 
 let data=load();
 let editId=null;
@@ -314,9 +335,16 @@ function saveResponse(){
     again:cur.again||"", comment:document.getElementById('f_comment').value.trim(),
     ts:Date.now()
   };
-  if(editId){const i=data.findIndex(d=>d.id===editId);data[i]=rec;toast("更新しました")}
-  else{data.push(rec);toast("保存しました")}
-  save();resetForm();render();
+  const isEdit=!!editId;
+  if(isEdit){const i=data.findIndex(d=>d.id===editId);data[i]=rec}
+  else{data.push(rec)}
+  save();
+  if(gasUrl()){
+    postToGas(rec).then(()=>toast(isEdit?"更新＋ドライブ送信":"保存＋ドライブ送信"));
+  }else{
+    toast(isEdit?"更新しました":"保存しました");
+  }
+  resetForm();render();
 }
 
 function editRec(id){
@@ -484,7 +512,18 @@ function printForm(){
   window.print();
 }
 
+function refreshGasState(){
+  const u=gasUrl();const el=document.getElementById('gasState');const inp=document.getElementById('gasUrlIn');
+  if(inp&&!inp.value)inp.value=localStorage.getItem(URLKEY)||DEFAULT_GAS_URL||"";
+  if(el)el.textContent=u?"✓ 連携中（保存時にドライブへ送信）":"未設定（端末保存のみ）";
+}
+function saveGasUrl(){const v=document.getElementById('gasUrlIn').value.trim();
+  if(v&&!/^https:\/\/script\.google\.com\//.test(v)){toast("Apps ScriptのURLを確認してください");return}
+  localStorage.setItem(URLKEY,v);refreshGasState();toast(v?"送信先を保存しました":"送信先を解除しました")}
+function clearGasUrl(){localStorage.removeItem(URLKEY);document.getElementById('gasUrlIn').value=DEFAULT_GAS_URL||"";refreshGasState();toast("送信先を解除しました")}
+
 render();
+refreshGasState();
 </script>
 </body>
 </html>
