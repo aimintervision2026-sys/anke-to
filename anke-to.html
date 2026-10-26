@@ -43,16 +43,16 @@
   .toast.ok{background:var(--good)}
   /* print */
   .paper{display:none}
-  @media print{body{background:#fff}header.app,.app-only,.submitbar{display:none !important}.wrap{max-width:100%;padding:0}.paper{display:block}.pf{page-break-after:always}@page{size:A4;margin:12mm}}
+  @media print{body{background:#fff}header.app,.app-only,.submitbar{display:none !important}.wrap{max-width:100%;padding:0}.paper{display:block}.pf:not(:last-child){page-break-after:always}@page{size:A4;margin:12mm}}
   .paper .pf{font-size:14px;color:#000}
   .paper h1.pt{font-size:21px;text-align:center;margin:0 0 2px}
   .paper .pnote{text-align:center;font-size:11px;color:#444;margin:0 0 10px}
-  .paper .pq{border:1.4px solid #000;border-radius:7px;padding:8px 11px;margin:0 0 8px}
+  .paper .pq{border:1.4px solid #000;border-radius:7px;padding:10px 13px;margin:0 0 12px}
   .paper .pq .pl{font-size:14px;font-weight:700;margin:0 0 6px}
   .paper .pscale{display:flex;gap:6px;flex-wrap:wrap;font-size:16px}
-  .paper .pscale .n{width:30px;height:30px;border:1.3px solid #000;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+  .paper .pscale .n{width:34px;height:34px;border:1.3px solid #000;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
   .paper .pchips{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px}.paper .pchips span::before{content:"□ "}
-  .paper .pwrite{border-bottom:1px solid #999;min-height:20px}.paper .pwrite.tall{min-height:40px}
+  .paper .pwrite{border-bottom:1px solid #999;min-height:20px}.paper .pwrite.tall{min-height:56px}
   .paper .prow{display:flex;gap:16px;flex-wrap:wrap;font-size:14px}.paper .prow span::before{content:"○ "}
   .paper .pmeta{display:flex;gap:16px;font-size:13px;margin-top:2px;flex-wrap:wrap}
 </style>
@@ -167,7 +167,7 @@ function backupCSV(){
 }
 
 function printForm(){let html="";
-  for(let k=0;k<2;k++){html+=`<div class="pf">
+  for(let k=0;k<1;k++){html+=`<div class="pf">
     <h1 class="pt">白川郷バス旅行 参加者アンケート</h1>
     <p class="pnote">今後の行事の参考にさせていただきます。ご協力をお願いいたします。</p>
     <div class="pmeta">店舗：__________　お名前：__________（任意）　参加日：__/__</div>
@@ -181,7 +181,7 @@ function printForm(){let html="";
     <div class="pq"><div class="pl">6. 次に行きたい場所（□・いくつでも／自由）</div><div class="pchips">${NEXT.map(g=>`<span>${g}</span>`).join("")}</div>
       <div style="margin-top:4px">その他：<span class="pwrite" style="display:inline-block;width:65%">&nbsp;</span></div></div>
     <div class="pq"><div class="pl">7. また参加したいですか？（○）</div><div class="prow">${AGAIN.map(a=>`<span>${a}</span>`).join("")}</div></div>
-    <div class="pq"><div class="pl">8. ご意見・ご要望</div><div class="pwrite tall">&nbsp;</div><div class="pwrite tall">&nbsp;</div></div>
+    <div class="pq"><div class="pl">8. ご意見・ご要望</div><div class="pwrite tall">&nbsp;</div><div class="pwrite tall">&nbsp;</div><div class="pwrite tall">&nbsp;</div></div>
   </div>`}
   document.getElementById('paperArea').innerHTML=html;window.print()}
 </script>
