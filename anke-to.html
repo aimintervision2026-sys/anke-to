@@ -272,7 +272,7 @@ const AGAIN=["はい","どちらでも","いいえ"];
 const KEY="shirakawa_enquete_v1";
 const URLKEY="shirakawa_gas_url";
 // ↓↓ Googleドライブへ飛ばす場合、デプロイ後のウェブアプリURLをここに貼る（全店に配る版はここに書くと楽）
-const DEFAULT_GAS_URL="";
+const DEFAULT_GAS_URL="https://script.google.com/macros/s/AKfycbxOTi1Vwadng62aoJpdgNaiZjEMDIpHAABAPsNiSdo0-DR_xtHDaCjqtFYIn-tK7s0PDQ/exec";
 function gasUrl(){return (localStorage.getItem(URLKEY)||DEFAULT_GAS_URL||"").trim()}
 function postToGas(rec){
   const u=gasUrl();if(!u)return Promise.resolve(false);
