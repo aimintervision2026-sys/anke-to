@@ -74,6 +74,7 @@
   </div>
 
   <div class="card"><h2><span class="q">1</span>今回の旅行の満足度（10段階）</h2><div class="sat" id="f_sat"></div><div class="sat-legend"><span>1 とても不満</span><span>10 大満足</span></div></div>
+  <div class="card"><h2><span class="q">＋</span>どんな点があれば「9〜10点」でしたか？</h2><textarea id="f_toten" placeholder="あと何があれば満点だったか、ご自由にお書きください（任意）"></textarea></div>
   <div class="card"><h2><span class="q">2</span>良かった点（いくつでも）</h2><div class="chips" id="f_good"></div>
     <div style="margin-top:10px"><label class="lb">その他</label><input type="text" id="f_good_other" placeholder="具体的にあれば"></div></div>
   <div class="card"><h2><span class="q">3</span>改善してほしい点（いくつでも）</h2><div class="chips" id="f_improve"></div>
@@ -133,7 +134,7 @@ segSet('f_burden',BURDEN,'burden');segSet('f_again',AGAIN,'again');
 function toast(m,ok){const t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(ok?' ok':'');clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',1900)}
 function resetForm(){cur={sat:null,good:new Set(),improve:new Set(),burden:null,motive:new Set(),next:new Set(),again:null};
   document.querySelectorAll('.chip.on,.sat button.on,.seg button.on').forEach(c=>c.classList.remove('on'));
-  ['f_name','f_good_other','f_improve_other','f_motive_other','f_next_other','f_comment'].forEach(id=>document.getElementById(id).value="");
+  ['f_name','f_good_other','f_improve_other','f_motive_other','f_next_other','f_toten','f_comment'].forEach(id=>document.getElementById(id).value="");
   window.scrollTo({top:0,behavior:'smooth'})}
 
 function submitResponse(){
@@ -143,7 +144,7 @@ function submitResponse(){
     name:document.getElementById('f_name').value.trim(),sat:cur.sat,
     good:[...cur.good],goodOther:document.getElementById('f_good_other').value.trim(),improve:[...cur.improve],improveOther:document.getElementById('f_improve_other').value.trim(),
     burden:cur.burden||"",motive:[...cur.motive],motiveOther:document.getElementById('f_motive_other').value.trim(),next:[...cur.next],nextOther:document.getElementById('f_next_other').value.trim(),
-    again:cur.again||"",comment:document.getElementById('f_comment').value.trim(),ts:Date.now()};
+    again:cur.again||"",toTen:document.getElementById('f_toten').value.trim(),comment:document.getElementById('f_comment').value.trim(),ts:Date.now()};
   // 予備バックアップ（端末）
   try{const b=JSON.parse(localStorage.getItem(BK)||'[]');b.push(rec);localStorage.setItem(BK,JSON.stringify(b))}catch(e){}
   // 都度送信（提出）
@@ -158,10 +159,10 @@ function submitResponse(){
 function backupCSV(){
   let b=[];try{b=JSON.parse(localStorage.getItem(BK)||'[]')}catch(e){}
   if(!b.length){toast("バックアップがありません");return}
-  const head=["id","店舗","参加日","氏名","満足度","良かった点","良かった点(自由)","改善してほしい点","改善(自由)","身体的な負担","参加のきっかけ","きっかけ(自由)","次行きたい(選択)","次行きたい(自由)","また参加","コメント"];
+  const head=["id","店舗","参加日","氏名","満足度","良かった点","良かった点(自由)","改善してほしい点","改善(自由)","身体的な負担","参加のきっかけ","きっかけ(自由)","次行きたい(選択)","次行きたい(自由)","また参加","9-10点への要望","コメント"];
   const cc=v=>{v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
   const lines=[head.join(",")];
-  b.forEach(r=>lines.push([r.id,r.store,r.date,r.name,r.sat,(r.good||[]).join('、'),r.goodOther,(r.improve||[]).join('、'),r.improveOther,r.burden,(r.motive||[]).join('、'),r.motiveOther,(r.next||[]).join('、'),r.nextOther,r.again,r.comment].map(cc).join(",")));
+  b.forEach(r=>lines.push([r.id,r.store,r.date,r.name,r.sat,(r.good||[]).join('、'),r.goodOther,(r.improve||[]).join('、'),r.improveOther,r.burden,(r.motive||[]).join('、'),r.motiveOther,(r.next||[]).join('、'),r.nextOther,r.again,r.toTen,r.comment].map(cc).join(",")));
   const blob=new Blob(["\uFEFF"+lines.join("\r\n")],{type:"text/csv"});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download="白川郷アンケート_端末控え_"+new Date().toISOString().slice(0,10)+".csv";a.click();
 }
@@ -173,6 +174,7 @@ function printForm(){let html="";
     <div class="pmeta">店舗：__________　お名前：__________（任意）　参加日：__/__</div>
     <div class="pq"><div class="pl">1. 満足度（1〜10に○）　1＝とても不満／10＝大満足</div>
       <div class="pscale">${[...Array(10)].map((_,i)=>`<span class="n">${i+1}</span>`).join("")}</div></div>
+    <div class="pq"><div class="pl">　どんな点があれば「9〜10点」でしたか？（任意）</div><div class="pwrite tall">&nbsp;</div><div class="pwrite tall">&nbsp;</div></div>
     <div class="pq"><div class="pl">2. 良かった点（□・いくつでも）</div><div class="pchips">${GOOD.map(g=>`<span>${g}</span>`).join("")}<span>その他（　　　）</span></div></div>
     <div class="pq"><div class="pl">3. 改善してほしい点（□・いくつでも）</div><div class="pchips">${IMPROVE.map(g=>`<span>${g}</span>`).join("")}</div>
       <div style="margin-top:4px">その他：<span class="pwrite" style="display:inline-block;width:65%">&nbsp;</span></div></div>
